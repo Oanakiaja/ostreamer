@@ -2,36 +2,49 @@
 import { useAtomValue } from "jotai";
 import { deviceFamily } from "./Capture";
 import { useEffect, useMemo, useRef } from "react";
+import Stream from "@/lib/stream";
+import { Device } from "@/lib/device";
 
 const Video = () => {
   const videoDevice = useAtomValue(
-    // @ts-expect-error
     deviceFamily({
       type: "videoinput",
     })
   );
   const audioDevice = useAtomValue(
-    // @ts-expect-error
     deviceFamily({
       type: "audioinput",
     })
   );
 
-  // FIXME: audio track change will refresh media stream
-  const mediaStream = useMemo(() => {
-    if (!globalThis.MediaStream) return;
-    const ms = new MediaStream(
-      [videoDevice?.track, audioDevice?.track].filter(
-        Boolean
-      ) as MediaStreamTrack[]
-    );
-    return ms;
-  }, [videoDevice?.track?.id, audioDevice?.track?.id]);
-
   const videoRef = useRef<HTMLVideoElement>(null);
-  if (videoRef.current && mediaStream) {
-    videoRef.current.srcObject = mediaStream;
+  if (videoRef.current) {
+    videoRef.current.srcObject = new Stream([
+      videoDevice?.track,
+      audioDevice?.track,
+    ]).ms;
   }
+
+  // FIXME: video 闪烁
+  useEffect(() => {
+    addOrReplaceTrack(videoDevice, videoDevice?.track);
+  }, [videoDevice]);
+
+  useEffect(() => {
+    addOrReplaceTrack(audioDevice, audioDevice?.track);
+  }, [audioDevice]);
+
+  const addOrReplaceTrack = (device?: Device, newTrack?: MediaStreamTrack) => {
+    const ms = videoRef.current?.srcObject;
+    if (!(ms instanceof MediaStream) || !device?.track?.id || !newTrack?.id) {
+      return;
+    }
+    // ? 为什么不用 stop ，去查证一下
+    // const track = ms.getTrackById(device?.track?.id);
+    // track?.stop?.();
+    // track && ms.removeTrack(track);
+    ms.addTrack(newTrack);
+  };
 
   return (
     <video

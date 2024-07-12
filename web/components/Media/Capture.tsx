@@ -1,8 +1,8 @@
 "use client";
 import { atom, useAtom, useSetAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
-import { cx } from "classix";
 import { jGet } from "@/jotai/utils";
+import { cx } from "classix";
 import {
   Select,
   SelectContent,
@@ -10,72 +10,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const TypeContrastsDefault: Record<"audio" | "video", MediaTrackConstraints> = {
-  video: {
-    aspectRatio: {
-      ideal: 16 / 9,
-    },
-  },
-  audio: {},
-};
+import { Device, deviceUtils } from "@/lib/device";
 
 const DeviceListAtom = atom<MediaDeviceInfo[]>([]);
 const queryDeviceListAtom = atom(null, async (get, set) => {
-  const devices = get(DeviceListAtom);
+  let devices = get(DeviceListAtom);
   if (devices.length === 0) {
-    const devices = await navigator.mediaDevices.enumerateDevices();
+    devices = await deviceUtils.enumerateDevices();
     set(DeviceListAtom, devices);
   }
   return devices;
 });
 
 const getDeviceListByType = (type: MediaDeviceInfo["kind"]) => {
-  return jGet(DeviceListAtom).filter(
-    (v) => v.kind === type && v.deviceId !== "default"
-  );
+  return deviceUtils.getDeviceListByType(jGet(DeviceListAtom), type);
 };
 
 const getDeviceById = (id: MediaDeviceInfo["deviceId"]) => {
-  return jGet(DeviceListAtom).find((v) => v.deviceId === id);
-};
-
-type Device = {
-  type: MediaDeviceInfo["kind"];
-  list: MediaDeviceInfo[];
-  cur: MediaDeviceInfo | null;
-  track: MediaStreamTrack | null;
+  return deviceUtils.getDeviceById(jGet(DeviceListAtom), id);
 };
 
 export const deviceFamily = atomFamily(
-  ({ type: _, device }: { type: MediaDeviceInfo["kind"]; device: Device }) =>
+  ({ type: _, device }: { type: MediaDeviceInfo["kind"]; device?: Device }) =>
     atom(device),
   (a, b) => a.type === b.type
 );
-
-const getUserMediaType = (type: MediaDeviceInfo["kind"]) =>
-  type.substring(0, 5) as "audio" | "video";
-
-const grantPermissionByDeviceType = async (type: MediaDeviceInfo["kind"]) => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      [getUserMediaType(type)]: true,
-    });
-    if (!stream.getTracks()?.length) {
-      console.log("todo: 提示");
-      return false;
-    }
-    stream.getTracks().forEach((v) => v.stop());
-    return true;
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      if (/permission/i.test(e.message)) {
-        alert("请在操作系统处授予浏览器权限，并重启浏览器");
-      }
-    }
-    return false;
-  }
-};
 
 const Capture = ({
   type,
@@ -90,7 +49,7 @@ const Capture = ({
   const [device, setDevice] = useAtom(
     deviceFamily({
       type,
-      device: { type, list: options, cur: null, track: null },
+      device: { type, list: options },
     })
   );
 
@@ -101,14 +60,13 @@ const Capture = ({
       return;
     }
     if (!typeDeviceList?.[0].deviceId) {
-      // FIXME: granted process may have bug 😭
-      // Maybe need ask for device permission
-      if (!(await grantPermissionByDeviceType(type))) {
+      if (!(await deviceUtils.grantPermissionByDeviceType(type))) {
         return;
       }
       handleGetUserMedia();
       return;
     }
+
     let curDeviceId = device?.cur?.deviceId;
 
     if (device?.cur?.deviceId && device.track) {
@@ -116,30 +74,22 @@ const Capture = ({
       return;
     }
 
-    if (!curDeviceId && typeDeviceList?.[0].deviceId) {
-      curDeviceId = typeDeviceList?.[0].deviceId;
+    if (!curDeviceId) {
+      curDeviceId = deviceUtils.getDefaultDeviceId(jGet(DeviceListAtom), type);
     }
-
     handleSetDeviceById(curDeviceId!);
   };
 
   const stopCapture = () => {
     device?.track?.stop?.();
-    setDevice((pre) => ({ ...pre, track: null }));
+    setDevice((pre) => ({ ...pre!, track: undefined }));
   };
 
   const handleSetDeviceById = async (deviceId: string) => {
     const cur = getDeviceById(deviceId)!;
-    const ms = await navigator.mediaDevices.getUserMedia({
-      /** video audio */
-      [getUserMediaType(type)]: {
-        ...TypeContrastsDefault[getUserMediaType(type)],
-        deviceId: cur?.deviceId,
-      },
-    });
-    const track = ms.getTracks()[0];
+    const track = await deviceUtils.getDeviceTrackById(type, cur?.deviceId);
     device?.track?.stop?.();
-    setDevice((pre) => ({ ...pre, cur, track }));
+    setDevice((pre) => ({ ...pre!, cur, track }));
   };
 
   return (
