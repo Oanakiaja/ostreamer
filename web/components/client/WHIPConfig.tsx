@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { atom, useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 
-export const configAtom = atom({
+export const configAtom = atomWithStorage("whip_config", {
   server: "",
   bearer: "",
 });
