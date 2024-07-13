@@ -1,10 +1,12 @@
-import Capture from "./Media/Capture";
+import ControlPanel from "./client/ControlPanel";
+import CSRWrapper from "./client/CSRWrapper";
 
 const Footer = () => {
   return (
-    <div className="mb-32 flex justify-between w-full lg:mb-0  ">
-      <Capture type="videoinput" text="Video" />
-      <Capture type="audioinput" text="Mic" />
+    <div className="mb-32 flex   lg:mb-0  ">
+      <CSRWrapper>
+        <ControlPanel />
+      </CSRWrapper>
     </div>
   );
 };

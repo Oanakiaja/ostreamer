@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@/components/client/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "ostreamer",

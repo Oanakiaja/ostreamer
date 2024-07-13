@@ -1,4 +1,5 @@
-import { DarkMode } from "./DarkMode";
+import CSRWrapper from "./client/CSRWrapper";
+import { DarkMode } from "./client/DarkMode";
 
 const Header = () => {
   return (

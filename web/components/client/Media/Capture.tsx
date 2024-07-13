@@ -2,15 +2,16 @@
 import { atom, useAtom, useSetAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
 import { jGet } from "@/jotai/utils";
-import { cx } from "classix";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Device, deviceUtils } from "@/lib/device";
+import { cn } from "@/lib/utils";
+import { type LucideIcon } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 
 const DeviceListAtom = atom<MediaDeviceInfo[]>([]);
 const queryDeviceListAtom = atom(null, async (get, set) => {
@@ -38,14 +39,15 @@ export const deviceFamily = atomFamily(
 
 const Capture = ({
   type,
-  text,
+  IconOn,
+  IconOff,
 }: {
   type: MediaDeviceInfo["kind"];
-  text: string;
+  IconOn: LucideIcon;
+  IconOff: LucideIcon;
 }) => {
   const setDeviceList = useSetAtom(queryDeviceListAtom);
   const options = getDeviceListByType(type);
-
   const [device, setDevice] = useAtom(
     deviceFamily({
       type,
@@ -93,42 +95,34 @@ const Capture = ({
   };
 
   return (
-    <div className=" flex-col lg:flex-row ">
-      <p className="m-0 w-[30ch] max-w-[30ch] text-sm opacity-50 ">
-        <button
-          onClick={handleGetUserMedia}
-          className={cx(
-            `w-full pd-4 border pd-10 cursor-pointer
-            border-blue-200 rounded-lg hover:border-blue-600
-            hover:text-blue-600 mb-4`,
-            device?.track ? "border-blue-600" : ""
-          )}
-        >
-          {text}
-        </button>
-
-        <Select
-          value={device?.cur?.deviceId}
-          onValueChange={(deviceId) => {
-            handleSetDeviceById(deviceId);
-          }}
-          disabled={!options?.length}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={`Select ${type}`} />
-          </SelectTrigger>
-          {Boolean(options?.length) && (
-            <SelectContent>
-              {options?.map((device: MediaDeviceInfo) => (
-                <SelectItem key={device.deviceId} value={device.deviceId}>
-                  {device.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          )}
-        </Select>
-      </p>
-    </div>
+    <p className="m-0 w-[10ch] max-w-[30ch] text-sm opacity-50  flex border mr-8">
+      <button
+        onClick={handleGetUserMedia}
+        className={cn(` cursor-pointer hover:text-blue-600 mx-4`)}
+      >
+        {device?.track ? <IconOn className="stroke-blue-600" /> : <IconOff />}
+      </button>
+      <Select
+        value={device?.cur?.deviceId}
+        onValueChange={(deviceId) => {
+          handleSetDeviceById(deviceId);
+        }}
+        disabled={!Boolean(options?.length)}
+      >
+        <SelectTrigger>
+          <SlidersHorizontal />
+        </SelectTrigger>
+        {Boolean(options?.length) && (
+          <SelectContent className="w-full">
+            {options?.map((device: MediaDeviceInfo) => (
+              <SelectItem key={device.deviceId} value={device.deviceId}>
+                {device.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        )}
+      </Select>
+    </p>
   );
 };
 

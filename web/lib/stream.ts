@@ -1,6 +1,5 @@
 import { Nullable } from "@/types";
 
-
 class Stream {
   ms: MediaStream;
 
@@ -10,6 +9,20 @@ class Stream {
 
   static isSupported() {
     return !!globalThis.MediaStream;
+  }
+
+  replaceTrack(track?: MediaStreamTrack) {
+    if (!track?.id) {
+      return;
+    }
+    this.ms.addTrack(track);
+
+    const tracks = this.ms.getTracks();
+    tracks.forEach((cur) => {
+      if (cur.kind !== track.kind || cur.id === track.id) return;
+      cur.stop();
+      this.ms.removeTrack(cur);
+    });
   }
 }
 
