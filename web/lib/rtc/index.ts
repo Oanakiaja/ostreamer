@@ -18,6 +18,7 @@ class Peer {
   async communicateSdp(server: string, bearer: string) {
     try {
       const offer = await this.pc.createOffer();
+      this.pc.setLocalDescription(offer);
       const sdp = await whip(server)(offer.sdp, {
         headers: {
           Authorization: `Bearer ${bearer}`,
@@ -32,11 +33,11 @@ class Peer {
     }
   }
 
-  addTransceiverTrack(ms: MediaStreamTrack) {
-    if (ms.kind === "audio") {
-      this.pc.addTransceiver(ms, { direction: "sendonly" });
+  addTransceiverTrack(mt: MediaStreamTrack) {
+    if (mt.kind === "audio") {
+      this.pc.addTransceiver(mt, { direction: "sendonly" });
     } else {
-      this.pc.addTransceiver(ms, {
+      this.pc.addTransceiver(mt, {
         direction: "sendonly",
         sendEncodings: [
           {
