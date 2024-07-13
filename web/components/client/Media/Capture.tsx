@@ -1,7 +1,7 @@
 "use client";
 import { atom, useAtom, useSetAtom } from "jotai";
 import { atomFamily } from "jotai/utils";
-import { jGet } from "@/jotai/utils";
+import { jGet } from "@/lib/jotai/utils";
 import {
   Select,
   SelectContent,
