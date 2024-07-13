@@ -1,20 +1,11 @@
 "use client";
-import { useAtomValue } from "jotai";
-import { deviceFamily } from "./Capture";
 import StreamVideo from "@/lib/video/StreamVideo";
 import { cn } from "@/lib/utils";
+import { useTrack } from "@/hooks/track";
 
 const Video = () => {
-  const videoTrack = useAtomValue(
-    deviceFamily({
-      type: "videoinput",
-    })
-  )?.track;
-  const audioTrack = useAtomValue(
-    deviceFamily({
-      type: "audioinput",
-    })
-  )?.track;
+  const videoTrack = useTrack("videoinput");
+  const audioTrack = useTrack("audioinput");
 
   return (
     <div

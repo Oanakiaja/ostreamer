@@ -1,4 +1,6 @@
 "use client";
+import { store } from "@/lib/jotai";
+import { Provider } from "jotai";
 import { useState, useEffect } from "react";
 
 const CSRWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -7,7 +9,7 @@ const CSRWrapper = ({ children }: { children: React.ReactNode }) => {
     setMounted(true);
   }, []);
   if (!mounted) return <></>;
-  return children;
+  return <Provider store={store}>{children}</Provider>;
 };
 
 export default CSRWrapper;

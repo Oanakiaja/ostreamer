@@ -18,8 +18,6 @@ const StreamVideo = memo(({ videoTrack, audioTrack, className }: Props) => {
   streamRef.current.replaceTrack(videoTrack);
   streamRef.current.replaceTrack(audioTrack);
 
-  console.log("track", streamRef.current);
-
   return (
     <video
       className={cn(className, `w-full h-full`)}

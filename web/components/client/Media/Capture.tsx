@@ -95,7 +95,7 @@ const Capture = ({
   };
 
   return (
-    <p className="m-0 w-[10ch] max-w-[30ch] text-sm opacity-50  flex border mr-8">
+    <>
       <button
         onClick={handleGetUserMedia}
         className={cn(` cursor-pointer hover:text-blue-600 mx-4`)}
@@ -122,7 +122,7 @@ const Capture = ({
           </SelectContent>
         )}
       </Select>
-    </p>
+    </>
   );
 };
 
