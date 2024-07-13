@@ -6,10 +6,7 @@ import WHIPConfig from "./WHIPConfig";
 
 const ControlPanel = () => {
   return (
-    <div className="w-full">
-      <div className="w-full flex">
-        <WHIPConfig></WHIPConfig>
-      </div>
+    <div className="w-full mt-4">
       <div className=" flex items-center justify-center">
         <p className="m-0 w-[10ch] max-w-[30ch] text-sm opacity-50  flex border mr-8">
           <Capture type="videoinput" IconOn={Camera} IconOff={CameraOff} />
@@ -20,6 +17,9 @@ const ControlPanel = () => {
         <p className="m-0 max-w-[30ch] text-sm  flex  mr-8">
           <Publish />
         </p>
+      </div>
+      <div className="w-full flex">
+        <WHIPConfig></WHIPConfig>
       </div>
     </div>
   );
